@@ -1,0 +1,43 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(135deg, #2980b9, #6dd5fa);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  text-align: center;
+  color: #fff;
+}
+
+#game-board {
+  width: 300px;
+  height: 300px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 3px solid #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tile {
+  background-image: url("https://picsum.photos/600");
+  background-size: 300px 300px;
+  cursor: pointer;
+}
+
+.tile.empty {
+  background: rgba(0,0,0,0.3);
+  cursor: default;
+}
+
+.hidden {
+  display: none;
+}
