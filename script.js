@@ -34,10 +34,33 @@ shuffleBtn.addEventListener("click", () => {
 
 
 function shuffleTiles() {
-  for (let i = tiles.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+  // Use Fisher-Yates to produce a random permutation, but only accept
+  // permutations that are solvable for a 3x3 (8-puzzle) board.
+  function isSolvable(arr) {
+    const flat = arr.slice();
+    // count inversions excluding the blank (represented by 8)
+    let inv = 0;
+    for (let i = 0; i < flat.length; i++) {
+      for (let j = i + 1; j < flat.length; j++) {
+        if (flat[i] === 8 || flat[j] === 8) continue;
+        if (flat[i] > flat[j]) inv++;
+      }
+    }
+    // For odd grid width (3), puzzle is solvable when inversion count is even
+    return inv % 2 === 0;
   }
+
+  // generate until the puzzle is become solvable
+  let attempt;
+  do {
+    attempt = Array.from({ length: 9 }, (_, i) => i);
+    for (let i = attempt.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [attempt[i], attempt[j]] = [attempt[j], attempt[i]];
+    }
+  } while (!isSolvable(attempt));
+
+  tiles = attempt;
 }
 
 
@@ -67,30 +90,28 @@ function renderBoard() {
 function moveTile_UI_Only(index) {
   const emptyIndex = tiles.indexOf(8);
 
- 
-  const wrongAdjacency = [
-    emptyIndex - 3,
-    emptyIndex + 3,
-    emptyIndex - 1,
-    emptyIndex + 1,
-  ];
+  function isAdjacent(a, b) {
+    // same column distance (up/down)
+    if (Math.abs(a - b) === 3) return true;
+    //  left/right must be on same row
+    if (Math.abs(a - b) === 1 && Math.floor(a / 3) === Math.floor(b / 3)) return true;
+    return false;
+  }
 
-  if (!wrongAdjacency.includes(index)) return;
+  if (!isAdjacent(index, emptyIndex)) return;
 
-  
-  const clickedTile = board.children[index];
-  const emptyTile = board.children[emptyIndex];
-  board.insertBefore(clickedTile, emptyTile); 
+  // swap tiles
+  [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+  renderBoard();
 
   moves++;
   movesEl.textContent = moves;
-  checkWin(); 
+  checkWin();
 }
 
 
 function checkWin() {
-  
-  const isSolved = tiles.every((val, i) => val === i + 1); 
+  const isSolved = tiles.every((val, i) => val === i);
   if (isSolved) {
     stopTimer();
     messageEl.classList.remove("hidden");
